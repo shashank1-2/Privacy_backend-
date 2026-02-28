@@ -103,6 +103,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+@app.get("/")
+def root():
+    return {"status": "ok"}
 
 app.include_router(auth_router)
 app.include_router(vault_files_router)
@@ -562,7 +565,3 @@ async def get_timeline(request: Request, hours: int = 24, current_user: dict = D
         "buckets": audit_log_service.get_timeline(hours=safe_hours, user_id=user_id)
     }
 
-if __name__ == "__main__":
-    import uvicorn
-    # IMPORTANT: host="0.0.0.0" allows access from network IPs
-    uvicorn.run(app, host="0.0.0.0", port=8000)
