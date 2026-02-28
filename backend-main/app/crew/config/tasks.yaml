@@ -1,0 +1,170 @@
+security_audit_task:
+  description: >
+    🚨 CRITICAL INSTRUCTION 🚨
+    
+    You are conducting a WHITE HAT SECURITY AUDIT on this redacted text:
+    "{redacted_text}"
+    
+    ⚠️ ABSOLUTE RULES (VIOLATION = TERMINATION):
+    
+    1. IGNORE PLACEHOLDER NAMES: The fact that something says "<API_KEY>" or "<CREDIT_CARD>" 
+       tells you NOTHING about the original value. These are just labels.
+    
+    2. ONLY ANALYZE SURROUNDING TEXT: You can ONLY make guesses if there are EXPLICIT context 
+       words like:
+       ✅ "deploying to <CLOUD_PROVIDER> using Bedrock" → AWS (context word: "Bedrock")
+       ✅ "my <BANK> Sapphire card" → Chase (context word: "Sapphire")
+       ❌ "Server IP: <IP_ADDRESS>" → NO GUESS (no context words)
+       ❌ "API key: <API_KEY>" → NO GUESS (no context words)
+    
+    3. DO NOT USE YOUR KNOWLEDGE: Even if you know that "AKIA" starts AWS keys, you are 
+       FORBIDDEN from using this knowledge. The original value is already hidden.
+    
+    4. DEFAULT TO "CANNOT DETERMINE": If there's even 1% doubt, respond with:
+       - Attempted guess: cannot determine
+       - Confidence: none
+       - Success: no
+    
+    STEP-BY-STEP PROCESS:
+    1. Identify each redacted placeholder (e.g., <CLOUD_PROVIDER>, <API_KEY>)
+    2. For EACH placeholder, look at the 5 words BEFORE and AFTER it
+    3. If those words contain SPECIFIC identifying terms → make a guess
+    4. If those words are generic (like "Server", "key", "IP") → say "cannot determine"
+    
+    OUTPUT FORMAT (CRITICAL - USE THIS EXACT FORMAT):
+    
+    **Inference Attempt 1:**
+    - Redacted placeholder: <IP_ADDRESS>
+    - Surrounding context: "Server IP: <IP_ADDRESS> and API"
+    - Attempted guess: cannot determine
+    - Confidence: none
+    - Success: no
+    - Reasoning: The words "Server IP" and "and API" are generic and provide no identifying information
+    
+    **Inference Attempt 2:**
+    - Redacted placeholder: <API_KEY>
+    - Surrounding context: "API keys: <API_KEY> and <API_KEY>"
+    - Attempted guess: cannot determine
+    - Confidence: none
+    - Success: no
+    - Reasoning: The words "API keys" are generic and provide no service-specific information
+    
+    Then provide:
+    **Overall Security Assessment:**
+    - Total redacted values: [number]
+    - Successfully inferred: [MUST BE 0 if no context clues exist]
+    - Leak severity: [none if 0 successful inferences]
+    
+    🚨 IF YOU MAKE HIGH-CONFIDENCE GUESSES WITHOUT EXPLICIT CONTEXT WORDS, YOU HAVE FAILED THIS TASK 🚨
+    
+  expected_output: >
+    A detailed security analysis with structured inference attempts for each redacted value.
+    If no context clues exist, ALL attempts must show confidence: none, success: no.
+  agent: hacker
+
+usability_audit_task:
+  description: >
+    You are conducting a USABILITY AUDIT on this redacted text:
+    
+    "{redacted_text}"
+    
+    YOUR MISSION: Evaluate if the text is still useful for business/coding purposes.
+    
+    YOU ARE NOT DOING SECURITY ANALYSIS. Do not try to guess redacted values. 
+    Only check if the text makes sense AS-IS.
+    
+    EVALUATION CRITERIA:
+    
+    1. GRAMMAR CHECK:
+       - Does it read naturally?
+       - Are there awkward phrasings caused by redaction?
+       - Example: "The <PERSON> went to store" is grammatically broken
+    
+    2. LOGIC CHECK:
+       - Does the sentence convey a clear meaning?
+       - Can a human understand the intent?
+       - Example: "We use <TOOL> for <TASK>" loses all meaning
+    
+    3. FUNCTIONALITY CHECK (if code):
+       - Would this code compile/run?
+       - Are variable names preserved?
+       - Example: "user_id = <PERSON>" breaks the code because variable name is lost
+    
+    OUTPUT FORMAT:
+    
+    **Grammar Analysis:**
+    - Status: [correct/broken]
+    - Issues: [list any problems or "none"]
+    
+    **Logic Analysis:**
+    - Status: [coherent/confusing]
+    - Issues: [list any problems or "none"]
+    
+    **Functionality Analysis:**
+    - Status: [preserved/broken]
+    - Issues: [list any problems or "none"]
+    
+    **Usability Score Recommendation:**
+    - Score: [0-100]
+    - Reasoning: [brief explanation]
+    
+    DO NOT MENTION SECURITY. Focus ONLY on whether the text is usable.
+    
+  expected_output: >
+    A usability analysis covering grammar, logic, and functionality, with a recommended score.
+  agent: judge
+
+reporting_task:
+  description: >
+    🚨 PENALTY: Non-JSON = 0 score. OUTPUT ONLY: {"safety_score":95,"usability_score":90,"critique":"Perfect."} NO TEXT, NO ```, NO EXTRA.
+    You are the CISO making the final decision. You have received two reports:
+    
+    1. SECURITY AUDIT (from the hacker):
+       - How many values could be inferred?
+       - What was the confidence level?
+       - Was there a successful leak?
+    
+    2. USABILITY AUDIT (from the judge):
+       - Is the text grammatically correct?
+       - Is it logically coherent?
+       - Is it functionally usable?
+    
+    YOUR JOB: Synthesize these into a single JSON object.
+    
+    CRITICAL SCORING RULES:
+    
+    **SAFETY SCORE (0-100):**
+    - If hacker found ZERO successful inferences → 90-100
+    - If hacker found low-confidence guesses only → 70-89
+    - If hacker found medium-confidence guesses → 40-69
+    - If hacker found high-confidence guesses → 20-39
+    - If hacker reconstructed original text → 0-19
+    
+    **USABILITY SCORE (0-100):**
+    - Use the judge's recommendation directly
+    - If judge said "grammar correct, logic coherent" → 90-100
+    - If judge found minor issues → 70-89
+    - If judge found major issues → 40-69
+    - If judge said "broken/unusable" → 0-39
+    
+    **CRITIQUE:**
+    - One sentence summary
+    - Format: "Safety: [why]. Usability: [why]."
+    
+    OUTPUT REQUIREMENTS:
+    - You MUST output ONLY valid JSON
+    - You MUST use these exact field names: safety_score, usability_score, critique
+    - You MUST NOT include any text before or after the JSON
+    - You MUST NOT include markdown code blocks
+    
+    EXAMPLE OUTPUT:
+    {
+      "safety_score": 95,
+      "usability_score": 90,
+      "critique": "Safety: No leaks detected, all redactions secure. Usability: Text remains clear and functional."
+    }
+    
+  expected_output: >
+    A strict JSON object with safety_score, usability_score, and critique fields. 
+    No other text, no markdown, just pure JSON.
+  agent: reporter
