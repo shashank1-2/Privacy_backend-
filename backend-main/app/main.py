@@ -98,7 +98,10 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # Se
 # This fixes the "CORS policy: No 'Access-Control-Allow-Origin'" error.
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1|0\.0\.0\.0):\d+",
+    allow_origins=[
+        "http://localhost:3000",
+        "https://your-frontend.vercel.app"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
